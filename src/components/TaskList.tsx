@@ -13,17 +13,37 @@ interface Task {
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [error, setError] = useState(false);
 
   function handleCreateNewTask() {
-    // Crie uma nova task com um id random, não permita criar caso o título seja vazio.
+    if (newTaskTitle) {
+      const newTask: Task = {
+        id: Math.random(),
+        title: newTaskTitle,
+        isComplete: false,
+      }
+      
+      setError(false);
+      return setTasks([...tasks, newTask]);
+    }
+    
+    return setError(true);
   }
 
   function handleToggleTaskCompletion(id: number) {
-    // Altere entre `true` ou `false` o campo `isComplete` de uma task com dado ID
+    const allTasks = [...tasks];
+
+    const completedTextIndex = tasks.findIndex(task => task.id === id);
+    
+    allTasks[completedTextIndex].isComplete = !allTasks[completedTextIndex].isComplete;    
+
+    setTasks(allTasks);
   }
 
   function handleRemoveTask(id: number) {
-    // Remova uma task da listagem pelo ID
+    const filteredTaks = tasks.filter(task => task.id !== id);
+
+    setTasks(filteredTaks);
   }
 
   return (
@@ -32,12 +52,15 @@ export function TaskList() {
         <h2>Minhas tasks</h2>
 
         <div className="input-group">
-          <input 
-            type="text" 
-            placeholder="Adicionar novo todo" 
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            value={newTaskTitle}
-          />
+          <div className="input">
+            <input 
+              type="text" 
+              placeholder="Adicionar novo todo" 
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              value={newTaskTitle}
+            />
+            {error && <span>Você não pode criar uma task sem título</span>}
+          </div>
           <button type="submit" data-testid="add-task-button" onClick={handleCreateNewTask}>
             <FiCheckSquare size={16} color="#fff"/>
           </button>
